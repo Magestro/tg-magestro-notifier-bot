@@ -1,9 +1,12 @@
 #!/usr/bin/env python3
 
 import os
+import time
+
 from telegram.ext import Updater, CommandHandler, MessageHandler, Filters
 from src.telegram.bot import Bot
 from src.config.main import MainConfig
+from src.parser.onliner import Onliner
 
 
 def main():
@@ -36,4 +39,14 @@ def main():
 
 
 if __name__ == '__main__':
-    main()
+    # main()
+    parser = Onliner()
+
+
+    config = MainConfig(os.path.dirname(__file__)+"/main.json")
+
+    updater = Updater(config.token)
+
+    for flat in parser.get_all():
+        updater.bot.send_message(config.group_chat_id, str(flat))
+        time.sleep(0.1)
