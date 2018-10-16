@@ -4,6 +4,8 @@ import os
 import time
 
 from telegram.ext import Updater, CommandHandler, MessageHandler, Filters
+
+from src.storage.flat import Flat
 from src.telegram.bot import Bot
 from src.config.main import MainConfig
 from src.parser.onliner import Onliner
@@ -48,5 +50,12 @@ if __name__ == '__main__':
     updater = Updater(config.token)
 
     for flat in parser.get_all():
-        updater.bot.send_message(config.group_chat_id, str(flat))
-        time.sleep(0.1)
+        dbflat = Flat().select().where(Flat.where=="onliner" and Flat.external_id == flat.external_id).get()
+        if dbflat.id:
+            print("find flat: {}".format(dbflat.id))
+            pass
+        else:
+            flat.save()
+            print("save flat: {}".format(flat.id))
+            # updater.bot.send_message(config.group_chat_id, str(flat))
+            time.sleep(0.5)
