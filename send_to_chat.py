@@ -2,10 +2,12 @@
 
 import os
 import sys
+
 from telegram.ext import Updater
+
 from src.config.main import MainConfig
 
-config = MainConfig(os.path.dirname(__file__)+"/main.json")
+config = MainConfig(os.path.dirname(__file__) + "/main.json")
 
 updater = Updater(config.token)
 

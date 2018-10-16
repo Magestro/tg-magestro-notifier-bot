@@ -1,5 +1,6 @@
-from src.storage.flat import Flat
 from typing import List
+
+from src.storage.db import Flat
 
 Flats = List[Flat]
 

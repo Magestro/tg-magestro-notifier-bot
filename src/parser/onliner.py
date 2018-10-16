@@ -1,9 +1,10 @@
+import time
 from urllib.parse import urlencode
 
 import requests
 
-from src.parser.base_parser import BaseParser, Flats
-from src.storage.flat import Flat
+from src.storage.db import Flat
+from .base_parser import BaseParser, Flats
 
 
 class Onliner(BaseParser):
@@ -13,7 +14,8 @@ class Onliner(BaseParser):
 
     def __init__(self):
         self.url = "https://ak.api.onliner.by/search/apartments"
-        self.params = {'rent_type[]': "1_room", 'price[max]': 250, 'currency': 'usd', 'page': 1}
+        self.params = {'rent_type[]': "1_room", 'price[max]': 250, 'currency': 'usd', 'page': 1,
+                       "bounds[lb][lat]": 53.80713881129995, "bounds[lb][long]": 27.389602661132812, "bounds[rt][lat]": 53.99485396562768, "bounds[rt][long]": 27.716789245605472}
 
     def geturl(self):
         return self.url + "?" + urlencode(self.params)
@@ -33,8 +35,9 @@ class Onliner(BaseParser):
         else:
             self.params[key] = val
 
-    def get_all(self) -> Flats:
-        flats = []
+    def get_all(self, page: int = 1, flats=[]) -> Flats:
+        print("try to get page {} from {}".format(page, self.where))
+        self.set_page(page)
 
         print(self.geturl())
         r = requests.get(self.geturl())
@@ -53,5 +56,9 @@ class Onliner(BaseParser):
             )
 
             flats.append(flat)
+
+        if response['page']['current'] < response['page']['last']:
+            time.sleep(1)
+            return self.get_all(page+1, flats)
 
         return flats

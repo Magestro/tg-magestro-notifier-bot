@@ -12,4 +12,3 @@ class AbstractConfig:
 
     def _assign(self, fjson):
         raise Exception("method not implemented")
-

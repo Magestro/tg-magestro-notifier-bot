@@ -1,16 +1,44 @@
+import json
+
 from peewee import *
 
-from src.storage.flat import Flat
+path = "main.sqlite"
+db = SqliteDatabase(path)
 
 
-class DB:
-    path = "main.sqlite"
-    db = None
+class Flat(Model):
+    id = PrimaryKeyField()
+    external_id = CharField()
+    price = FloatField()
+    link = CharField()
+    photo = CharField()
+    address = CharField()
+    where = CharField()
 
-    def get_db(self) -> SqliteDatabase:
-        if self.db is None:
-            self.db = SqliteDatabase(self.path)
-            self.db.connect()
-            self.db.create_tables([Flat])
+    class Meta:
+        database = db
 
-        return self.db
+    @property
+    def __str__(self):
+        return """
+        Цена: ${}
+        Ссылка: {}
+        Фотка: {}
+        Адрес: {}
+        """.format(self.price, self.link, self.photo, self.address)
+
+    def __dict__(self):
+        return {
+            "external_id": self.external_id,
+            "price": self.price,
+            "link": self.link,
+            "photo": self.photo,
+            "address": self.address,
+        }
+
+    def json(self):
+        return json.dumps(self.__dict__())
+
+
+db.connect()
+db.create_tables([Flat])
