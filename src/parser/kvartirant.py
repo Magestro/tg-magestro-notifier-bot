@@ -1,5 +1,4 @@
-import hashlib
-import time
+import re
 from urllib.parse import urlencode
 
 import requests
@@ -51,12 +50,15 @@ class Kvartirant(BaseParser):
         items = pq('table.ads_list_table tr')
 
         for val in items.items():
-            if val.find('.price-box') is None:
+            if val.find('.title a').attr('href') is None:
+                continue
+
+            ext_id = int(val.find('.title a').attr('href').split("/")[-2])
+            if ext_id <= 0:
                 continue
 
             if val.find('.img') is not None:
                 photo = "https://www.kvartirant.by" + val.find('img').attr('src')
-                print(photo)
             else:
                 photo = ""
 
@@ -64,8 +66,8 @@ class Kvartirant(BaseParser):
                 where=self.where,
                 created_at=val.find('.date').text(),
                 owner=val.find('.owner').text() == "собственник",
-                external_id=hashlib.sha224(val.text().encode()).hexdigest(),
-                price=val.find('.price-box').text(),
+                external_id=str(ext_id),
+                price=re.sub('[^0-9]', '', val.find('.price-box').text()),
                 link=val.find('.title a').attr('href'),
                 photo=photo,
                 address=val.find('.rooms').text()

@@ -1,14 +1,13 @@
 #!/usr/bin/env python3.7
 
 import os
-import sys
 import time
+
 from telegram.ext import Updater, CommandHandler, MessageHandler, Filters
 
 from src import MainConfig
 from src.parser import Onliner, Kvartirant
 from src.storage.db import Flat
-from src.storage.db import db
 from src.telegram.bot import Bot
 
 
@@ -47,21 +46,21 @@ def parse_kvartirant(config: MainConfig, updater):
     for flat in parser.get_all():
         try:
             print("try to find: where: {}; extid: {}".format(Kvartirant.where, flat.external_id))
-            flat = Flat().select().where((Flat.where == Onliner.where) & (Flat.external_id == flat.external_id)).get()
+            flat = Flat().select().where((Flat.where == Kvartirant.where) & (Flat.external_id == flat.external_id)).get()
         except:
             pass
 
         if flat.id is None:
             try:
-                result = updater.bot.send_photo(config.group_chat_id, flat.photo, "New flat from \"{}\" found!\n{}\n{}"
-                                                .format(flat.where, flat.address, flat.link) +
-                                                "\nprice: {}\nowner: {}\ncreated: {}\n"
-                                                .format(flat.price, flat.owner, flat.created_at))
-                flat.save()
+                result = updater.bot.send_message(config.group_chat_id, "New flat from \"{}\" found!\n{}\n{}"
+                                                  .format(flat.where, flat.address, flat.link) +
+                                                  "\nprice: {}р.\nowner: {}\ncreated: {}\n"
+                                                  .format(flat.price, flat.owner, flat.created_at))
                 time.sleep(10)  # todo max msg per time
+                flat.save()
                 print("save flat: {}".format(flat.id))
-            except Exception:
-                print("cant send message: {}".format(flat.external_id))
+            except Exception as e:
+                print("cant send message: {}; exception: {}".format(flat.external_id, e))
                 pass
 
 

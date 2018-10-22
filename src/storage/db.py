@@ -2,6 +2,7 @@ import json
 import os
 
 from peewee import *
+
 path = os.path.realpath(os.getcwd() + "/volume/main.sqlite")  # todo
 db = SqliteDatabase(path)
 
@@ -11,15 +12,15 @@ class Flat(Model):
     where = CharField()
     external_id = CharField()
 
-    created_at = DateTimeField()
+    created_at = DateTimeField(null=True)
     owner = BooleanField()
     price = FloatField()
     link = CharField()
-    photo = CharField()
-    address = CharField()
+    photo = CharField(null=True)
+    address = CharField(null=True)
 
-    latitude = CharField()
-    longitude = CharField()
+    latitude = CharField(null=True)
+    longitude = CharField(null=True)
 
     class Meta:
         database = db
