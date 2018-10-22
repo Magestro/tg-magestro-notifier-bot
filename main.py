@@ -6,7 +6,7 @@ import time
 from telegram.ext import Updater, CommandHandler, MessageHandler, Filters
 
 from src import MainConfig
-from src.parser.onliner import Onliner
+from src.parser import Onliner, Kvartirant
 from src.storage.db import Flat
 from src.storage.db import db
 from src.telegram.bot import Bot
@@ -41,6 +41,30 @@ def main():
     updater.idle()
 
 
+def parse_kvartirant(config: MainConfig, updater):
+    parser = Kvartirant()
+
+    for flat in parser.get_all():
+        try:
+            print("try to find: where: {}; extid: {}".format(Kvartirant.where, flat.external_id))
+            flat = Flat().select().where((Flat.where == Onliner.where) & (Flat.external_id == flat.external_id)).get()
+        except:
+            pass
+
+        if flat.id is None:
+            try:
+                result = updater.bot.send_photo(config.group_chat_id, flat.photo, "New flat from \"{}\" found!\n{}\n{}"
+                                                .format(flat.where, flat.address, flat.link) +
+                                                "\nprice: {}\nowner: {}\ncreated: {}\n"
+                                                .format(flat.price, flat.owner, flat.created_at))
+                flat.save()
+                time.sleep(10)  # todo max msg per time
+                print("save flat: {}".format(flat.id))
+            except Exception:
+                print("cant send message: {}".format(flat.external_id))
+                pass
+
+
 def parse_onliner(config: MainConfig, updater):
     parser = Onliner()
 
@@ -72,6 +96,7 @@ if __name__ == '__main__':
     updater = Updater(config.token)
     # main()
     while True:
+        parse_kvartirant(config, updater)
         parse_onliner(config, updater)
         print("end iteration")
         time.sleep(30)

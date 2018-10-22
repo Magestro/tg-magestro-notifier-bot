@@ -1,7 +1,9 @@
+import hashlib
 import time
 from urllib.parse import urlencode
 
 import requests
+from pyquery import PyQuery
 
 from src.storage.db import Flat
 from .base_parser import BaseParser, Flats
@@ -10,7 +12,7 @@ from .base_parser import BaseParser, Flats
 class Kvartirant(BaseParser):
     url = None
     params = None
-    where = "onliner"
+    where = "kvartirant"
 
     def __init__(self):
         self.url = "https://www.kvartirant.by/ads/flats/type/rent/"
@@ -34,9 +36,6 @@ class Kvartirant(BaseParser):
     def set_max_price(self, price: int = None):
         return self.set_filter_by_key('tx_uedbadsboard_pi1[search][price][to]', price)
 
-    def set_page(self, page: int):
-        return self.set_filter_by_key('page', page)
-
     def set_filter_by_key(self, key, val: int = None):
         if val is None:
             self.params.pop(key, None)
@@ -45,32 +44,33 @@ class Kvartirant(BaseParser):
 
     def get_all(self, page: int = 1, flats=[]) -> Flats:
         print("try to get page {} from {}".format(page, self.where))
-        # self.set_page(page)
 
         print(self.geturl())
         r = requests.get(self.geturl())
-        response = r.json()
+        pq = PyQuery(r.content.decode())
+        items = pq('table.ads_list_table tr')
 
-        # todo response['errors']
+        for val in items.items():
+            if val.find('.price-box') is None:
+                continue
 
-        for val in response['apartments']:
+            if val.find('.img') is not None:
+                photo = "https://www.kvartirant.by" + val.find('img').attr('src')
+                print(photo)
+            else:
+                photo = ""
+
             flat = Flat(
                 where=self.where,
-                created_at=val['created_at'],
-                owner=val['contact']['owner'],
-                external_id=val['id'],
-                price=val['price']['converted']['USD']['amount'],
-                link=val['url'],
-                photo=val['photo'],
-                address=val['location']['address'],
-                latitude=val['location']['latitude'],
-                longitude=val['location']['longitude']
+                created_at=val.find('.date').text(),
+                owner=val.find('.owner').text() == "собственник",
+                external_id=hashlib.sha224(val.text().encode()).hexdigest(),
+                price=val.find('.price-box').text(),
+                link=val.find('.title a').attr('href'),
+                photo=photo,
+                address=val.find('.rooms').text()
             )
 
             flats.append(flat)
-
-        if response['page']['current'] < response['page']['last']:
-            time.sleep(1)
-            return self.get_all(page+1, flats)
 
         return flats

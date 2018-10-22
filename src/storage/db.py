@@ -25,7 +25,7 @@ class Flat(Model):
         database = db
 
     def json(self):
-        return json.dumps(self.__dict__())
+        return json.dumps(self.__dict__)
 
 
 db.connect()
