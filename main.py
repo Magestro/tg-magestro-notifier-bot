@@ -1,8 +1,8 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python3.7
 
 import os
+import sys
 import time
-
 from telegram.ext import Updater, CommandHandler, MessageHandler, Filters
 
 from src import MainConfig
@@ -41,30 +41,37 @@ def main():
     updater.idle()
 
 
-if __name__ == '__main__':
-    # main()
+def parse_onliner(config: MainConfig, updater):
     parser = Onliner()
-
-    config = MainConfig(os.path.dirname(__file__) + "/main.json")
-
-    updater = Updater(config.token)
 
     for flat in parser.get_all():
         try:
             print("try to find: where: {}; extid: {}".format(Onliner.where, flat.external_id))
             flat = Flat().select().where((Flat.where == Onliner.where) & (Flat.external_id == flat.external_id)).get()
-        except Exception:
+        except:
             pass
 
         if flat.id is None:
             try:
-                updater.bot.send_message(config.group_chat_id, flat.__str__)
+                result = updater.bot.send_photo(config.group_chat_id, flat.photo, "New flat from \"{}\" found!\n{}\n{}"
+                                                .format(flat.where, flat.address, flat.link) +
+                                                "\nprice: ${}\nowner: {}\ncreated: {}\n"
+                                                .format(flat.price, flat.owner, flat.created_at))
+                time.sleep(0.5)
+                updater.bot.send_location(config.group_chat_id, flat.latitude, flat.longitude, False, result.message_id)
                 flat.save()
-                time.sleep(5)  # todo max msg per time
+                time.sleep(10)  # todo max msg per time
                 print("save flat: {}".format(flat.id))
             except Exception:
                 print("cant send message: {}".format(flat.external_id))
                 pass
 
-    print("end iteration")
-    db.close()
+
+if __name__ == '__main__':
+    config = MainConfig(os.getcwd() + "/volume/main.json")  # todo
+    updater = Updater(config.token)
+    # main()
+    while True:
+        parse_onliner(config, updater)
+        print("end iteration")
+        time.sleep(30)
