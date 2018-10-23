@@ -95,7 +95,10 @@ if __name__ == '__main__':
     updater = Updater(config.token)
     # main()
     while True:
-        parse_kvartirant(config, updater)
-        parse_onliner(config, updater)
+        try:
+            parse_kvartirant(config, updater)
+            parse_onliner(config, updater)
+        except Exception as e:
+            print("exception occured: %s" % e)
         print("end iteration")
         time.sleep(30)
