@@ -14,7 +14,7 @@ class Onliner(BaseParser):
 
     def __init__(self):
         self.url = "https://ak.api.onliner.by/search/apartments"
-        self.params = {'rent_type[]': "1_room", 'price[max]': 250, 'currency': 'usd', 'page': 1,
+        self.params = {'rent_type[]': "1_room", 'price[max]': 300, 'currency': 'usd', 'page': 1,
                        "bounds[lb][lat]": 53.822, "bounds[lb][long]": 27.407, "bounds[rt][lat]": 53.985, "bounds[rt][long]": 27.692}
 
     def geturl(self):
