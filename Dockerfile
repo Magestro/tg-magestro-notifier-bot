@@ -10,7 +10,7 @@ RUN \
 RUN pip3.7 install --upgrade pip
 
 RUN git clone https://github.com/Magestro/tg-magestro-notifier-bot.git . \
-    && git checkout master
+    && git checkout v2.0.2
 
 RUN pip3.7 install --upgrade -r requirements.txt
 

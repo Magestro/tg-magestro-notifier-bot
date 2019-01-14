@@ -19,8 +19,9 @@ class Kvartirant(BaseParser):
             "tx_uedbadsboard_pi1[search][q]": "",
             "tx_uedbadsboard_pi1[search][district]": 0,
             "tx_uedbadsboard_pi1[search][rooms][1]": 1,
+            "tx_uedbadsboard_pi1[search][rooms][2]": 2,
             "tx_uedbadsboard_pi1[search][price][from]": "",
-            "tx_uedbadsboard_pi1[search][price][to]": 300,
+            "tx_uedbadsboard_pi1[search][price][to]": 500,
             "tx_uedbadsboard_pi1[search][currency]": 840,
             "tx_uedbadsboard_pi1[search][date]": "",
             "tx_uedbadsboard_pi1[search][agency_id]": ""
